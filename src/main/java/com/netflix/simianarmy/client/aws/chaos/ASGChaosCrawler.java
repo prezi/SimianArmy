@@ -45,6 +45,8 @@ public class ASGChaosCrawler implements ChaosCrawler {
     /** The aws client. */
     private final AWSClient awsClient;
 
+    public static final String TYPE = "ASG";
+
     /**
      * Instantiates a new basic chaos crawler.
      *

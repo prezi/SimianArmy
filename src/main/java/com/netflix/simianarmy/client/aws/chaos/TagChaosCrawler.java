@@ -26,6 +26,8 @@ public class TagChaosCrawler implements ChaosCrawler {
     private static final String NS = "simianarmy.chaos.Tag.";
     private static final String TAGS_TO_CRAWL = NS.concat("tagsToCrawl");
 
+    public static final String TYPE = "Tag";
+
     public TagChaosCrawler(AWSClient awsClient, MonkeyConfiguration cfg) {
         this.awsClient = awsClient;
         this.cfg = cfg;

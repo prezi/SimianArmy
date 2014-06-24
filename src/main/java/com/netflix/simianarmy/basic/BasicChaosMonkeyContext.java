@@ -26,6 +26,7 @@ import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
 import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.client.aws.chaos.ASGChaosCrawler;
+import com.netflix.simianarmy.client.aws.chaos.TagChaosCrawler;
 
 /**
  * The Class BasicContext. This provide the basic context needed for the Chaos Monkey to run. It will configure
@@ -43,15 +44,29 @@ public class BasicChaosMonkeyContext extends BasicSimianArmyContext implements C
     /** The chaos email notifier. */
     private ChaosEmailNotifier chaosEmailNotifier;
 
+    private static final String NS = "simianarmy.chaos.";
+    private static final String CRAWLER_TYPE = NS.concat("crawlerType");
+    private static final String DEFAULT_CRAWLER_TYPE = ASGChaosCrawler.TYPE;
+
     /**
      * Instantiates a new basic context.
      */
     public BasicChaosMonkeyContext() {
         super("simianarmy.properties", "client.properties", "chaos.properties");
-        setChaosCrawler(new ASGChaosCrawler(awsClient()));
+        setChaosCrawler(getChaosCrawlerFromConfig());
         setChaosInstanceSelector(new BasicChaosInstanceSelector());
         MonkeyConfiguration cfg = configuration();
         setChaosEmailNotifier(new BasicChaosEmailNotifier(cfg, new AmazonSimpleEmailServiceClient(), null));
+    }
+
+    private ChaosCrawler getChaosCrawlerFromConfig() {
+        String crawlerType = configuration().getStrOrElse(CRAWLER_TYPE, DEFAULT_CRAWLER_TYPE);
+        if (crawlerType.equals(ASGChaosCrawler.TYPE)) {
+            return new ASGChaosCrawler(awsClient());
+        } else if (crawlerType.equals(TagChaosCrawler.TYPE)) {
+            return new TagChaosCrawler(awsClient(), configuration());
+        }
+        throw new IllegalArgumentException("Unknown chaos crawler type: ".concat(crawlerType));
     }
 
     /** {@inheritDoc} */
