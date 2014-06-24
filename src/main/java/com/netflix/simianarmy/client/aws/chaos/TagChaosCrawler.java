@@ -1,5 +1,6 @@
 package com.netflix.simianarmy.client.aws.chaos;
 
+import com.amazonaws.services.ec2.model.Instance;
 import com.google.common.base.Predicate;
 import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.MonkeyConfiguration;
@@ -54,23 +55,13 @@ public class TagChaosCrawler implements ChaosCrawler {
 
     /** {@inheritDoc} */
     @Override
-    public List<InstanceGroup> groups(final String... names) {
-        Set<? extends NodeMetadata> nodes = awsClient.getJcloudsComputeService().listNodesDetailsMatching(new Predicate<ComputeMetadata>() {
-            @Override
-            public boolean apply(@Nullable ComputeMetadata input) {
-                for (String name : names) {
-                    if (input.getTags().contains(name)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        });
+    public List<InstanceGroup> groups(String... names) {
+       Map<String, List<Instance>> matchingInstances = awsClient.getInstancesMatchingAnyTags(Arrays.asList(names));
         List<InstanceGroup> list = new LinkedList<InstanceGroup>();
-        for (String tag : names) {
+        for (String tag : matchingInstances.keySet()) {
             InstanceGroup ig = new BasicInstanceGroup(tag, Types.TAG, awsClient.region());
-            for (NodeMetadata node : nodes) {
-                ig.addInstance(node.getId());
+            for (Instance instance : matchingInstances.get(tag)) {
+                ig.addInstance(instance.getInstanceId());
             }
             list.add(ig);
         }

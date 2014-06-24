@@ -33,34 +33,7 @@ import com.amazonaws.services.autoscaling.model.DescribeLaunchConfigurationsResu
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
-import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
-import com.amazonaws.services.ec2.model.CreateTagsRequest;
-import com.amazonaws.services.ec2.model.DeleteSnapshotRequest;
-import com.amazonaws.services.ec2.model.DeleteVolumeRequest;
-import com.amazonaws.services.ec2.model.DeregisterImageRequest;
-import com.amazonaws.services.ec2.model.DescribeImagesRequest;
-import com.amazonaws.services.ec2.model.DescribeImagesResult;
-import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
-import com.amazonaws.services.ec2.model.DescribeInstancesResult;
-import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
-import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
-import com.amazonaws.services.ec2.model.DescribeSnapshotsRequest;
-import com.amazonaws.services.ec2.model.DescribeSnapshotsResult;
-import com.amazonaws.services.ec2.model.DescribeVolumesRequest;
-import com.amazonaws.services.ec2.model.DescribeVolumesResult;
-import com.amazonaws.services.ec2.model.DetachVolumeRequest;
-import com.amazonaws.services.ec2.model.EbsInstanceBlockDevice;
-import com.amazonaws.services.ec2.model.Image;
-import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.ec2.model.InstanceBlockDeviceMapping;
-import com.amazonaws.services.ec2.model.ModifyInstanceAttributeRequest;
-import com.amazonaws.services.ec2.model.Reservation;
-import com.amazonaws.services.ec2.model.SecurityGroup;
-import com.amazonaws.services.ec2.model.Snapshot;
-import com.amazonaws.services.ec2.model.Tag;
-import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
-import com.amazonaws.services.ec2.model.Volume;
+import com.amazonaws.services.ec2.model.*;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
@@ -91,13 +64,7 @@ import org.jclouds.ssh.jsch.config.JschSshClientModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -699,6 +666,28 @@ public class AWSClient implements CloudClient {
             instance = i;
         }
         return instance;
+    }
+
+    /**
+     * Gets the instances that are tagged with any of the names in the parameter. Tag values are irrelevant.
+     * @param tags list of tag names
+     * @return map from tag name to matching instances
+     */
+    public Map<String, List<Instance>> getInstancesMatchingAnyTags(Collection<String> tags) {
+        Map<String, List<Instance>> result = new HashMap<>();
+        for (String tag : tags) {
+            LinkedList<String> tagList = new LinkedList<>();
+            tagList.add(tag);
+            DescribeInstancesResult dirResult = ec2Client().describeInstances(new DescribeInstancesRequest()
+                    .withFilters(new Filter("tag-key", tagList)));
+            LinkedList<Instance> instances = new LinkedList<>();
+            for (Reservation reservation : dirResult.getReservations()) {
+                instances.addAll(reservation.getInstances());
+            }
+            LOGGER.info(String.format("Found %d instances for tag %s", instances.size(), tag));
+            result.put(tag, instances);
+        }
+        return result;
     }
 
     /** {@inheritDoc} */
