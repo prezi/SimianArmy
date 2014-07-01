@@ -48,7 +48,7 @@ dependencies {
     compile 'com.amazonaws:aws-java-sdk:latest.release'
     compile 'commons-lang:commons-lang:2.6'
     compile 'joda-time:joda-time:2.0'
-    compile 'com.google.guava:guava:11.+'
+    compile 'com.google.guava:guava:16.0.1'
     compile 'org.apache.httpcomponents:httpclient:4.2.1'
     compile 'org.apache.httpcomponents:httpcore:4.2.1'
     compile 'org.jclouds.driver:jclouds-jsch:1.6.0'

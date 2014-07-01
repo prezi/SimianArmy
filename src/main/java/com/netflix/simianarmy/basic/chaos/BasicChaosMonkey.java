@@ -152,6 +152,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
                         LOGGER.warn("No chaos type was applicable to the instance: {}", inst);
                         continue;
                     }
+                    LOGGER.info("Running chaos {} for {}", chaosType.getKey(), inst);
                     terminateInstance(group, inst, chaosType);
                 }
             }

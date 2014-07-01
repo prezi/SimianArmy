@@ -24,10 +24,10 @@ public class TagChaosCrawler implements ChaosCrawler {
 
     private final AWSClient awsClient;
     private final MonkeyConfiguration cfg;
-    private static final String NS = "simianarmy.chaos.Tag.";
+    private static final String NS = "simianarmy.chaos.TAG.";
     private static final String TAGS_TO_CRAWL = NS.concat("tagsToCrawl");
 
-    public static final String TYPE = "Tag";
+    public static final String TYPE = "TAG";
 
     public TagChaosCrawler(AWSClient awsClient, MonkeyConfiguration cfg) {
         this.awsClient = awsClient;
@@ -48,7 +48,7 @@ public class TagChaosCrawler implements ChaosCrawler {
     public List<InstanceGroup> groups() {
         String tagStr = cfg.getStrOrElse(TAGS_TO_CRAWL, null);
         if (tagStr != null) {
-            return groups(tagStr.split("(,|\\s)*"));
+            return groups(tagStr.split("(,|\\s)+"));
         }
         return new LinkedList<InstanceGroup>();
     }
